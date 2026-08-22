@@ -33,13 +33,13 @@ No account-name prefix (`Kumobits.`, `Rille111.`) - the account/org you're brows
 
 ## Forks - special case
 
-Forks keep the upstream repo's name, prefixed with `Fork.` instead of `Public`/`Private`:
+Forks keep the upstream repo name, prefixed with `Fork.` instead of `Public`/`Private`:
 
 ```
 Fork.<upstream-repo-name>
 ```
 
-Reasoning: a fork's visibility just mirrors upstream, so a Public/Private prefix adds nothing - but the upstream name preserves provenance and makes "this is a fork of X" obvious at a glance.
+Reasoning: a fork visibility just mirrors upstream, so a Public/Private prefix adds nothing - but the upstream name preserves provenance and makes "this is a fork of X" obvious at a glance.
 
 Current forks: `Fork.hermes-agent`, `Fork.mnemosyne`.
 
@@ -50,9 +50,9 @@ Current forks: `Fork.hermes-agent`, `Fork.mnemosyne`.
 | `.github` | GitHub-magic name; powers org-wide defaults and community health files. Renaming breaks it. |
 | `rille111` (on account rille111) | Profile README repo - must exactly match the username or the profile README stops rendering. |
 
-## Hard constraint: no trailing `.git`
+## Hard constraint: no trailing .git
 
-GitHub silently strips a trailing `.git` (case-insensitive) from repo names, since that suffix is reserved for clone URLs. `Private.Backups.Git` becomes `Private.Backups` on creation/rename with no warning. Never end a repo name with `.Git` - use `.GitRepos` or similar.
+GitHub silently strips a trailing `.git` (case-insensitive) from repo names, since that suffix is reserved for clone URLs. `Private.Backups.Git` becomes `Private.Backups` on rename with no warning. Never end a repo name with `.Git` - use `.GitRepos` or similar.
 
 ## Examples
 
