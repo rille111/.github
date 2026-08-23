@@ -85,7 +85,39 @@ the naming convention without asking; state the chosen name.
   folder can be retired manually.
 - Desktop exe: `B:\Git\forks\hermes-agent\apps\desktop\release\win-unpacked\Hermes.exe`.
 
-## 4. Phantom directory locks (expected, not corruption)
+## 4. ⚠ Moving a folder breaks every junction pointing into it
+
+Windows junctions/symlinks store ABSOLUTE targets. Moving a folder silently
+invalidates every reparse point that referenced it — nothing errors at move time,
+things just fail later. The 2026-08-23 reorg broke **~5,200** of them, including
+4 Hermes skill junctions and the mnemosyne plugin symlink.
+
+**After ANY folder move, re-scan and repair.** `audit-git-layout.ps1` now checks
+this (section 7). Enumerate with a manual walk that does NOT descend into reparse
+points (`Get-ChildItem -Recurse` follows junctions and can loop forever):
+
+```powershell
+Get-ChildItem <root> -Force -Directory |
+  Where-Object { ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0 }
+```
+
+Repair = delete the link and recreate it at the new target (never edit in place):
+
+```powershell
+(Get-Item -LiteralPath $link -Force).Delete()
+New-Item -ItemType Junction -Path $link -Target $newTarget -Force
+```
+
+Known reparse points to re-check after a move (27 structural, ~6,640 node_modules):
+- `HERMES_HOME\hermes-agent` — the runtime junction (moves by design)
+- Skill junctions in **three** places: `~\.claude\skills\`, `~\.agents\skills\`,
+  **and `HERMES_HOME\skills\<category>\`** (this third one is easy to forget)
+- `HERMES_HOME\plugins\mnemosyne` (SymbolicLink) + 3 OneDrive plugin junctions
+- `venv` -> `.venv` shims inside hermes worktrees (first-run wizard requirement)
+- pnpm `node_modules` trees in PrismoChat / GoldenBalance-Web / minimal / depict-ai
+  (regenerable with `pnpm install`, but repair is faster)
+
+## 5. Phantom directory locks (expected, not corruption)
 
 Titan runs ~10 local AI agents. A folder that another agent holds as its working
 directory cannot be renamed/moved: Windows says Access denied while no process
@@ -93,7 +125,7 @@ lists the path, ACLs are fine, and writes INSIDE the folder succeed. Do NOT
 hunt-and-kill processes to clear these (that pattern zeroed the memory store on
 2026-07-31). Retry later — locks clear when the owning agent moves on.
 
-## 5. Audit
+## 6. Audit
 
 `audit-git-layout.ps1` in `kumobits/Private.Agents.Tools` (scripts\) checks all of
 this mechanically: GitHub name conformance, local placement vs remote URL, nothing
