@@ -15,8 +15,9 @@ Rewritten 2026-08-23 (B:\Git reorg: buckets, forks folder, GitWorktrees).
   (`OpenSource.MassTransit.Extensions` -> `Public.OpenSource.MassTransit-Extensions`).
 - No account-name prefix — the account already conveys it.
 - Categories: **Websites, Tools, OpenSource, Workshops, Samples, Docs, Customers,
-  Desktop, Agents, Backups, Apps, Computers** (both added 2026-08-23: Apps for the
-  nwo app suite, Computers for per-machine repos).
+  Desktop, Agents, Backups, Apps, Computers, Development** (all three added 2026-08-23:
+  Apps for the nwo app suite, Computers for per-machine repos, Development for
+  build/toolchain projects such as `Private.Development.MetaQuest`).
 - **Computers** = one repo per physical machine, named `Private.Computers.<Hostname>`,
   holding machine-specific config, inventories and recovery notes. First: 
   `Private.Computers.Titan`. Anything portable belongs in `Private.Agents.Skills`
