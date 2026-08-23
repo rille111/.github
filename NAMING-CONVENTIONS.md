@@ -75,3 +75,45 @@ GitHub silently strips a trailing `.git` (case-insensitive) from repo names, sin
 - Name new repos correctly at creation - no default-then-rename step.
 - If visibility changes, rename the repo to match (`Private.X.Y` -> `Public.X.Y`).
 - This file is mirrored in `rille111/.github` and `kumobits/.github`, and enforced by Claude via the `github-repo-naming` skill on titan. Keep all three in sync.
+---
+
+# Local folder layout on titan (`B:\Git`)
+
+The repo-name convention above governs GitHub. This section governs the local disk, because
+without it repos for the same account end up in two places at once.
+
+## Rule
+
+```
+B:\Git\<github-account>\<exact-repo-name>
+```
+
+- One folder per GitHub account/org: `rille111\`, `kumobits\`, `new-appworld-order\`.
+- Inside it, the folder name is **exactly** the GitHub repo name (`Private.Websites.PrismoChat`).
+  The account folder is what makes the account prefix redundant in repo names.
+- `_external\` — clones of other people's repos (upstream names kept, never renamed).
+- Underscore prefix sorts non-project folders to the top.
+
+## Exception: the Hermes fork
+
+`B:\Git\hermes-agent` (GitHub: `Fork.hermes-agent`) and `B:\Git\mnemosyne` (GitHub:
+`Fork.mnemosyne`) keep their upstream folder names and stay at the root. Reasons:
+
+- `hermes-agent` is the shared main repo for ~28 git worktrees whose `.git` files hold absolute
+  paths to it, the running desktop exe lives under it
+  (`apps\desktop\release\win-unpacked\Hermes.exe`), and three hardcoded paths in
+  `HERMES_HOME\tools\update-hermes.ps1` and `update-center-status.ps1` point at it.
+- Renaming buys nothing (the `fork` remote already points at `Fork.hermes-agent`) and risks the
+  daily driver.
+
+**Worktrees belong in `B:\Git\hermes-agent-worktrees\<short-name>`, never loose at the root.**
+Move them with `git worktree move <src> <dst>` — never `Rename-Item`/`mv`, which breaks the
+gitdir links in both directions. Verify with `git worktree prune --dry-run -v` (empty = healthy).
+
+## Known trap: phantom directory locks
+
+Titan runs ~10 local AI agents sharing this machine. A folder an agent currently has as its
+working directory cannot be renamed or moved — Windows reports `Access denied` / `being used by
+another process` even though no process lists that path as its executable and nothing references
+it in config. This is expected, not corruption. Do NOT hunt-and-kill processes to clear it; retry
+later, or when the owning agent is idle.
