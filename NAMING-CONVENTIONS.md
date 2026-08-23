@@ -1,119 +1,116 @@
-# GitHub Repository Naming Convention
+# Repo naming + local folder layout
 
-Applies to both accounts: `rille111` (personal) and `kumobits` (org). Fully applied 2026-08-22.
+Canonical for all of Rickard's GitHub accounts and for the local layout on titan.
+Mirrored in the `github-repo-naming` agent skill — if you change one, change both.
+Rewritten 2026-08-23 (B:\Git reorg: buckets, forks folder, GitWorktrees).
 
-## Pattern
+## 1. GitHub repo names
 
 ```
 <Public|Private>.<Category>.<Name>
 ```
 
-- **Visibility first** - `Public` or `Private`, matching the repo's actual visibility. Not redundant with GitHub's visibility badge: it makes private/internal repos cluster together when sorting a flat repo list, which the badge alone doesn't do.
-- **Category** - one word describing what kind of thing this is (see list below).
-- **Name** - PascalCase or Kebab-Case, whichever reads best. Hyphens go *inside* a segment; dots only separate the three fields above.
+- Visibility token first, matching actual repo visibility. If visibility changes, rename.
+- Exactly 3 dot segments; extra dots collapse to hyphens
+  (`OpenSource.MassTransit.Extensions` -> `Public.OpenSource.MassTransit-Extensions`).
+- No account-name prefix — the account already conveys it.
+- Categories: **Websites, Tools, OpenSource, Workshops, Samples, Docs, Customers,
+  Desktop, Agents, Backups, Apps** (Apps added 2026-08-23 for the nwo app suite).
+- Forks: `Fork.<upstream-repo-name>` (no visibility token). Never rename a fork away
+  from upstream's name.
+- **Never rename:** `.github` (GitHub-magic org repo), `rille111` (profile README repo,
+  must equal username).
+- **Trap:** GitHub silently strips a trailing `.git` from repo names
+  (`Private.Backups.Git` became `Private.Backups`). Use `.GitRepos` etc.
+  Always verify the resulting name after a rename.
 
-Exactly 3 dot-separated segments. If a name previously had extra dots (`OpenSource.MassTransit.Extensions`), collapse the tail with a hyphen: `Public.OpenSource.MassTransit-Extensions`.
+Accounts in scope: `rille111`, `kumobits`, `new-appworld-order`.
+(`3iluminati` was deleted 2026-08-23.)
 
-No account-name prefix (`Kumobits.`, `Rille111.`) - the account/org you're browsing already tells you that; repeating it in every repo name is noise.
-
-## Categories in use
-
-| Category | Meaning |
-|---|---|
-| Websites | Live or in-progress web properties |
-| Tools | Utilities, internal apps, scripts |
-| OpenSource | Public libraries / extensions meant for others to use |
-| Workshops | Teaching material, demos |
-| Samples | Snippets, experiments, old project code |
-| Docs | Cheatsheets, howtos, reference material |
-| Customers | Client-specific work |
-| Desktop | Desktop app projects |
-| Agents | AI agent projects |
-| Backups | Archived data / backup artifacts |
-
-## Forks - special case
-
-Forks keep the upstream repo name, prefixed with `Fork.` instead of `Public`/`Private`:
+## 2. Local layout on titan
 
 ```
-Fork.<upstream-repo-name>
+B:\Git\
+  rille111\      clones of rille111 repos          (folder name = exact repo name)
+  kumobits\      clones of kumobits repos          (folder name = exact repo name)
+  nwo\           clones of new-appworld-order repos (folder name = exact repo name)
+  forks\         OUR FORKS, upstream folder names   (hermes-agent, mnemosyne)
+  not-mine\      other people's repos, no fork intended (upstream names kept)
+  not-decided\   projects not (yet) pushed to any remote
+B:\GitWorktrees\ ALL git worktrees, any repo, flat: one folder per worktree, short names
+B:\GitWorktrees\runtime\   RESERVED for update-hermes.ps1 generated runtime trees
 ```
 
-Reasoning: a fork visibility just mirrors upstream, so a Public/Private prefix adds nothing - but the upstream name preserves provenance and makes "this is a fork of X" obvious at a glance.
+Decision rule for where a thing lives:
+- I own the repo on GitHub -> account folder (`rille111\`, `kumobits\`, `nwo\`).
+- It is my fork of someone's repo (`Fork.*` on GitHub) -> `forks\`, upstream folder name.
+- Someone else's repo, not forking -> `not-mine\`.
+- Not pushed anywhere / undecided -> `not-decided\`.
+- It is a worktree -> `B:\GitWorktrees\<short-name>`, NEVER anywhere else
+  (not B:\TEMP, not Documents, not the repo's parent).
+- Nothing else lives loose at `B:\Git` root. No exceptions anymore — the old
+  root-level `hermes-agent` / `mnemosyne` exception was retired 2026-08-23; both
+  now live in `forks\` and every hardcoded consumer was repointed.
 
-Current forks: `Fork.hermes-agent`, `Fork.mnemosyne`.
+When cloning, clone INTO the right folder directly. When creating a repo, apply
+the naming convention without asking; state the chosen name.
 
-## Exemptions - do NOT rename these
+## 3. Worktree rules
 
-| Repo | Why |
-|---|---|
-| `.github` | GitHub-magic name; powers org-wide defaults and community health files. Renaming breaks it. |
-| `rille111` (on account rille111) | Profile README repo - must exactly match the username or the profile README stops rendering. |
+- Move a worktree ONLY with `git worktree move <src> <dst>` — never Rename-Item /
+  mv, which breaks gitdir links in both directions.
+- Cross-volume moves: `git worktree move` fails with "Improper link"; instead
+  robocopy the tree, `git worktree repair <new-path>` from the main repo, verify
+  `git status` matches pre-move, then delete the old copy.
+- If the MAIN repo moves: move worktrees first (or after), then from the new main run
+  `git worktree repair <wt-path> [<wt-path>...]` listing every worktree — repairs both sides.
+- Verify after any move: `git worktree prune --dry-run -v` from the main repo must
+  print NOTHING, and every worktree must answer `git -C <wt> rev-parse HEAD`.
+- `B:\GitWorktrees\runtime\` is force-cleaned by update-hermes.ps1's
+  Invoke-TreeCleanup. NEVER put a dev worktree there — it will be deleted,
+  uncommitted work included.
 
-## Hard constraint: no trailing .git
+### Hermes runtime specifics (as of 2026-08-23)
 
-GitHub silently strips a trailing `.git` (case-insensitive) from repo names, since that suffix is reserved for clone URLs. `Private.Backups.Git` becomes `Private.Backups` on rename with no warning. Never end a repo name with `.Git` - use `.GitRepos` or similar.
+- Main fork repo: `B:\Git\forks\hermes-agent` (was `B:\Git\hermes-agent`).
+  Hardcoded consumers already repointed: `HERMES_HOME\tools\update-hermes.ps1`
+  ($MainRepo/$WtRoot/$WinUnpack), `update-center-status.ps1`, Start Menu `Hermes.lnk`,
+  `scripts\hermes-auth-list.ps1`, `scripts\verify-anthropic.ps1`.
+- The runtime junction `C:\Users\ADMIN\AppData\Local\hermes\hermes-agent` MOVES —
+  always read it live. As of the reorg it still points at the legacy live tree
+  `B:\Git\hermes-agent-worktrees\update-v2026.8.19-20260821-184354` (backend was
+  running from its venv, so it could not be moved). The next update-hermes.ps1 run
+  creates its tree in `B:\GitWorktrees\runtime\` and repoints the junction; after a
+  verified update + rollback window, the leftover `B:\Git\hermes-agent-worktrees\`
+  folder can be retired manually.
+- Desktop exe: `B:\Git\forks\hermes-agent\apps\desktop\release\win-unpacked\Hermes.exe`.
 
-## Examples
+## 4. Phantom directory locks (expected, not corruption)
 
-| Repo purpose | Name |
-|---|---|
-| Kumobits marketing site | `Private.Websites.Kumobits` |
-| Public library | `Public.OpenSource.MassTransit-Extensions` |
-| Public utility | `Public.Tools.Ollama` |
-| Teaching material | `Public.Workshops.CQS` |
-| Public reference docs | `Public.Docs.CheatSheetsCliCommandsHowTos` |
-| Private snippets/experiments | `Private.Samples.Azure` |
-| Internal tool, not public-ready | `Private.Tools.Gaming` |
-| Client-specific work | `Private.Customers.Patricia` |
-| Backup archives | `Private.Backups.GitRepos` |
-| Fork of an upstream project | `Fork.hermes-agent` |
+Titan runs ~10 local AI agents. A folder that another agent holds as its working
+directory cannot be renamed/moved: Windows says Access denied while no process
+lists the path, ACLs are fine, and writes INSIDE the folder succeed. Do NOT
+hunt-and-kill processes to clear these (that pattern zeroed the memory store on
+2026-07-31). Retry later — locks clear when the owning agent moves on.
 
-## Notes
+## 5. Audit
 
-- Renames are safe: GitHub auto-redirects the old URL and existing local clones keep working. Still update `git remote set-url` locally to avoid confusion later.
-- Name new repos correctly at creation - no default-then-rename step.
-- If visibility changes, rename the repo to match (`Private.X.Y` -> `Public.X.Y`).
-- This file is mirrored in `rille111/.github` and `kumobits/.github`, and enforced by Claude via the `github-repo-naming` skill on titan. Keep all three in sync.
----
+`audit-git-layout.ps1` in `kumobits/Private.Agents.Tools` (scripts\) checks all of
+this mechanically: GitHub name conformance, local placement vs remote URL, nothing
+loose at B:\Git root, worktree health. Run it after any repo/folder operation.
 
-# Local folder layout on titan (`B:\Git`)
+Quick manual checks:
 
-The repo-name convention above governs GitHub. This section governs the local disk, because
-without it repos for the same account end up in two places at once.
-
-## Rule
-
+```powershell
+# non-conforming GitHub names
+foreach ($o in @('rille111','kumobits','new-appworld-order')) {
+  gh repo list $o --limit 100 --json name --jq '.[].name' |
+    Where-Object { $_ -notmatch '^(Public|Private|Fork)\.' -and $_ -notin @('.github','rille111') } |
+    ForEach-Object { "$o/$_" }
+}
+# anything loose at B:\Git root (should list ONLY the bucket folders)
+Get-ChildItem B:\Git -Force | Where-Object { $_.Name -notin @('rille111','kumobits','nwo','forks','not-mine','not-decided','hermes-agent-worktrees') }
+# worktree health
+git -C B:\Git\forks\hermes-agent worktree prune --dry-run -v   # must be empty
+git -C B:\Git\forks\mnemosyne    worktree prune --dry-run -v   # must be empty
 ```
-B:\Git\<github-account>\<exact-repo-name>
-```
-
-- One folder per GitHub account/org: `rille111\`, `kumobits\`, `new-appworld-order\`.
-- Inside it, the folder name is **exactly** the GitHub repo name (`Private.Websites.PrismoChat`).
-  The account folder is what makes the account prefix redundant in repo names.
-- `_external\` — clones of other people's repos (upstream names kept, never renamed).
-- Underscore prefix sorts non-project folders to the top.
-
-## Exception: the Hermes fork
-
-`B:\Git\hermes-agent` (GitHub: `Fork.hermes-agent`) and `B:\Git\mnemosyne` (GitHub:
-`Fork.mnemosyne`) keep their upstream folder names and stay at the root. Reasons:
-
-- `hermes-agent` is the shared main repo for ~28 git worktrees whose `.git` files hold absolute
-  paths to it, the running desktop exe lives under it
-  (`apps\desktop\release\win-unpacked\Hermes.exe`), and three hardcoded paths in
-  `HERMES_HOME\tools\update-hermes.ps1` and `update-center-status.ps1` point at it.
-- Renaming buys nothing (the `fork` remote already points at `Fork.hermes-agent`) and risks the
-  daily driver.
-
-**Worktrees belong in `B:\Git\hermes-agent-worktrees\<short-name>`, never loose at the root.**
-Move them with `git worktree move <src> <dst>` — never `Rename-Item`/`mv`, which breaks the
-gitdir links in both directions. Verify with `git worktree prune --dry-run -v` (empty = healthy).
-
-## Known trap: phantom directory locks
-
-Titan runs ~10 local AI agents sharing this machine. A folder an agent currently has as its
-working directory cannot be renamed or moved — Windows reports `Access denied` / `being used by
-another process` even though no process lists that path as its executable and nothing references
-it in config. This is expected, not corruption. Do NOT hunt-and-kill processes to clear it; retry
-later, or when the owning agent is idle.
