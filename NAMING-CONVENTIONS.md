@@ -15,7 +15,12 @@ Rewritten 2026-08-23 (B:\Git reorg: buckets, forks folder, GitWorktrees).
   (`OpenSource.MassTransit.Extensions` -> `Public.OpenSource.MassTransit-Extensions`).
 - No account-name prefix — the account already conveys it.
 - Categories: **Websites, Tools, OpenSource, Workshops, Samples, Docs, Customers,
-  Desktop, Agents, Backups, Apps** (Apps added 2026-08-23 for the nwo app suite).
+  Desktop, Agents, Backups, Apps, Computers** (both added 2026-08-23: Apps for the
+  nwo app suite, Computers for per-machine repos).
+- **Computers** = one repo per physical machine, named `Private.Computers.<Hostname>`,
+  holding machine-specific config, inventories and recovery notes. First: 
+  `Private.Computers.Titan`. Anything portable belongs in `Private.Agents.Skills`
+  (agent skills) or `Private.Agents.Tools` (cross-machine scripts) instead.
 - Forks: `Fork.<upstream-repo-name>` (no visibility token). Never rename a fork away
   from upstream's name.
 - **Never rename:** `.github` (GitHub-magic org repo), `rille111` (profile README repo,
@@ -92,9 +97,13 @@ invalidates every reparse point that referenced it — nothing errors at move ti
 things just fail later. The 2026-08-23 reorg broke **~5,200** of them, including
 4 Hermes skill junctions and the mnemosyne plugin symlink.
 
-**After ANY folder move, re-scan and repair.** `audit-git-layout.ps1` now checks
-this (section 7). Enumerate with a manual walk that does NOT descend into reparse
-points (`Get-ChildItem -Recurse` follows junctions and can loop forever):
+**After ANY folder move, re-scan and repair.** `audit-git-layout.ps1` checks this
+(section 7). The full inventory, per-junction blast radius, repair recipe and the
+non-junction shims (shortcuts, scheduled tasks, Run keys, env vars, worktree
+gitdir pointers, config-embedded paths) are documented in
+**`kumobits/Private.Computers.Titan` -> `junctions/`**, with scan/repair/refresh
+scripts. Enumerate with a manual walk that does NOT descend into reparse points
+(`Get-ChildItem -Recurse` follows junctions and can loop forever):
 
 ```powershell
 Get-ChildItem <root> -Force -Directory |
