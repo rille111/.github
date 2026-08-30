@@ -43,7 +43,9 @@ B:\Git\
   forks\         OUR FORKS, upstream folder names   (hermes-agent, mnemosyne)
   not-mine\      other people's repos, no fork intended (upstream names kept)
   not-decided\   projects not (yet) pushed to any remote
-B:\GitWorktrees\ ALL git worktrees, any repo, flat: one folder per worktree, short names
+B:\GitWorktrees\           CONTAINER ONLY - never a worktree directly here
+B:\GitWorktrees\<Program>\ one folder per PROGRAM that creates worktrees, worktree inside:
+                           B:\GitWorktrees\ClaudeCode\<worktree>  (also ChatGPTCodex\)
 B:\GitWorktrees\runtime\   RESERVED for update-hermes.ps1 generated runtime trees
 ```
 
@@ -52,8 +54,16 @@ Decision rule for where a thing lives:
 - It is my fork of someone's repo (`Fork.*` on GitHub) -> `forks\`, upstream folder name.
 - Someone else's repo, not forking -> `not-mine\`.
 - Not pushed anywhere / undecided -> `not-decided\`.
-- It is a worktree -> `B:\GitWorktrees\<short-name>`, NEVER anywhere else
-  (not B:\TEMP, not Documents, not the repo's parent).
+- It is a worktree -> `B:\GitWorktrees\<Program>\<worktree>`, NEVER anywhere else
+  (not B:\TEMP, not Documents, not the repo's parent). `B:\GitWorktrees\` itself
+  holds ONLY program folders (rule set 2026-08-25): the program that created the
+  worktree names the folder - Claude Code -> `ClaudeCode\`, ChatGPT/Codex Desktop
+  -> `ChatGPTCodex\`. Worktrees created before this rule still sit flat at the
+  root; migrating them is a deliberate job, not a drive-by fix.
+- An EMPTY folder in an account folder is a RESERVED PLACEHOLDER (rule set
+  2026-08-30) - the name is claimed for a repo not created or cloned yet. That is
+  deliberate and `audit-git-layout.ps1` reports it as ok. Empty = reserved; has
+  files but no `.git`/origin = a failed clone or unversioned work, still a violation.
 - Nothing else lives loose at `B:\Git` root. No exceptions anymore — the old
   root-level `hermes-agent` / `mnemosyne` exception was retired 2026-08-23; both
   now live in `forks\` and every hardcoded consumer was repointed.
