@@ -11,15 +11,15 @@ Rewritten 2026-08-23 (B:\Git reorg: buckets, forks folder, GitWorktrees).
 ```
 
 - Visibility token first, matching actual repo visibility. If visibility changes, rename.
-- Exactly 3 dot segments (sole exception: `Private.Computers`); extra dots collapse to hyphens
+- Exactly 3 dot segments, no exceptions; extra dots collapse to hyphens
   (`OpenSource.MassTransit.Extensions` -> `Public.OpenSource.MassTransit-Extensions`).
 - No account-name prefix — the account already conveys it.
 - Categories: **Websites, Tools, OpenSource, Workshops, Samples, Docs, Customers,
   Desktop, Agents, Backups, Apps, Computers, Development** (all three added 2026-08-23:
   Apps for the nwo app suite, Computers for per-machine repos, Development for
   build/toolchain projects such as `Private.Development.MetaQuest`).
-- **Computers** = ONE repo, `kumobits/Private.Computers` (renamed from
-  `Private.Computers.Titan` on 2026-09-30; the one sanctioned two-segment name). One
+- **Computers** = ONE repo, `kumobits/Private.Computers.All` (`All` = all machines; renamed
+  from `Private.Computers.Titan` on 2026-09-30). One
   top-level folder per machine in capitals (`TITAN/`) for machine-specific config,
   inventories and recovery notes. Portable computer/Windows fixes go in `Windows/<Fix>/`,
   one folder per fix, each with a short `README.md`. AI/agent tooling belongs in
@@ -114,7 +114,7 @@ things just fail later. The 2026-08-23 reorg broke **~5,200** of them, including
 (section 7). The full inventory, per-junction blast radius, repair recipe and the
 non-junction shims (shortcuts, scheduled tasks, Run keys, env vars, worktree
 gitdir pointers, config-embedded paths) are documented in
-**`kumobits/Private.Computers` -> `TITAN/junctions/`**, with scan/repair/refresh
+**`kumobits/Private.Computers.All` -> `TITAN/junctions/`**, with scan/repair/refresh
 scripts. Enumerate with a manual walk that does NOT descend into reparse points
 (`Get-ChildItem -Recurse` follows junctions and can loop forever):
 
