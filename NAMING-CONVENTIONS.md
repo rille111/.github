@@ -16,7 +16,7 @@ Rewritten 2026-08-23 (B:\Git reorg: buckets, forks folder, GitWorktrees).
 - No account-name prefix — the account already conveys it.
 - Categories: **Websites, Tools, OpenSource, Workshops, Samples, Docs, Customers,
   Desktop, Agents, Backups, Apps, Computers, Development** (all three added 2026-08-23:
-  Apps for the nwo app suite, Computers for per-machine repos, Development for
+  Apps for the KK app suite, in the nwo org until 2026-10-18, Computers for per-machine repos, Development for
   build/toolchain projects such as `Private.Development.MetaQuest`).
 - **Computers** = ONE repo, `kumobits/Private.Computers.All` (`All` = all machines; renamed
   from `Private.Computers.Titan` on 2026-09-30). One
@@ -32,7 +32,7 @@ Rewritten 2026-08-23 (B:\Git reorg: buckets, forks folder, GitWorktrees).
   (`Private.Backups.Git` became `Private.Backups`). Use `.GitRepos` etc.
   Always verify the resulting name after a rename.
 
-Accounts in scope: `rille111`, `kumobits`, `new-appworld-order`.
+Accounts in scope: `rille111`, `kumobits`. `new-appworld-order` was retired 2026-10-18 after its 4 `Private.Apps.*` repos were transferred to `kumobits`.
 (`3iluminati` was deleted 2026-08-23.)
 
 ## 2. Local layout on titan
@@ -41,7 +41,6 @@ Accounts in scope: `rille111`, `kumobits`, `new-appworld-order`.
 B:\Git\
   rille111\      clones of rille111 repos          (folder name = exact repo name)
   kumobits\      clones of kumobits repos          (folder name = exact repo name)
-  nwo\           clones of new-appworld-order repos (folder name = exact repo name)
   forks\         OUR FORKS, upstream folder names   (hermes-agent, mnemosyne)
   not-mine\      other people's repos, no fork intended (upstream names kept)
   not-decided\   projects not (yet) pushed to any remote
@@ -52,7 +51,7 @@ B:\GitWorktrees\runtime\   RESERVED for update-hermes.ps1 generated runtime tree
 ```
 
 Decision rule for where a thing lives:
-- I own the repo on GitHub -> account folder (`rille111\`, `kumobits\`, `nwo\`).
+- I own the repo on GitHub -> account folder (`rille111\`, `kumobits\`).
 - It is my fork of someone's repo (`Fork.*` on GitHub) -> `forks\`, upstream folder name.
 - Someone else's repo, not forking -> `not-mine\`.
 - Not pushed anywhere / undecided -> `not-decided\`.
@@ -157,13 +156,13 @@ Quick manual checks:
 
 ```powershell
 # non-conforming GitHub names
-foreach ($o in @('rille111','kumobits','new-appworld-order')) {
+foreach ($o in @('rille111','kumobits')) {
   gh repo list $o --limit 100 --json name --jq '.[].name' |
     Where-Object { $_ -notmatch '^(Public|Private|Fork)\.' -and $_ -notin @('.github','rille111') } |
     ForEach-Object { "$o/$_" }
 }
 # anything loose at B:\Git root (should list ONLY the bucket folders)
-Get-ChildItem B:\Git -Force | Where-Object { $_.Name -notin @('rille111','kumobits','nwo','forks','not-mine','not-decided','hermes-agent-worktrees') }
+Get-ChildItem B:\Git -Force | Where-Object { $_.Name -notin @('rille111','kumobits','forks','not-mine','not-decided','hermes-agent-worktrees') }
 # worktree health
 git -C B:\Git\forks\hermes-agent worktree prune --dry-run -v   # must be empty
 git -C B:\Git\forks\mnemosyne    worktree prune --dry-run -v   # must be empty
